@@ -1,7 +1,7 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import AttendancePage from './pages/AttendancePage';
-import StudentRegisterPage from './pages/StudentRegisterPage';
+import StudentRegisterPage from './pages/StudentPage';
 import ClassManagePage from './pages/ClassManagePage';
 import PaymentManagePage from './pages/PaymentManagePage';
 import NoticeManagePage from './pages/NoticeManagePage';
