@@ -1,58 +1,76 @@
-// src/pages/HolidayPage.jsx
+// src/pages/HolidayManagePage.jsx
 import { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '../components/ui/table';
 
-function HolidayPage() {
+function HolidayManagePage() {
   const [holidays, setHolidays] = useState([]);
-  const [date, setDate] = useState('');
-  const [name, setName] = useState('');
+  const [holidayName, setHolidayName] = useState('');
+  const [holidayDate, setHolidayDate] = useState('');
 
   useEffect(() => {
-    const fetchHolidays = async () => {
-      const snapshot = await getDocs(collection(db, 'holidays'));
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setHolidays(list);
-    };
-
-    fetchHolidays();
+    const unsub = onSnapshot(collection(db, 'holidays'), snapshot => {
+      setHolidays(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsub();
   }, []);
 
   const handleAddHoliday = async () => {
-    if (!date || !name) {
-      alert('날짜와 이름을 입력하세요!');
+    if (!holidayName || !holidayDate) {
+      alert('휴일명과 날짜를 입력하세요!');
       return;
     }
-
-    await addDoc(collection(db, 'holidays'), { date, name });
-    setDate('');
-    setName('');
+    await addDoc(collection(db, 'holidays'), { name: holidayName, date: holidayDate });
+    setHolidayName('');
+    setHolidayDate('');
     alert('휴일 추가 완료!');
-    const snapshot = await getDocs(collection(db, 'holidays'));
-    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setHolidays(list);
+  };
+
+  const handleDeleteHoliday = async (id) => {
+    if (window.confirm('삭제하시겠습니까?')) {
+      await deleteDoc(doc(db, 'holidays', id));
+    }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>휴일 관리</h2>
-      <div>
-        <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-        <input type="text" placeholder="휴일명" value={name} onChange={e => setName(e.target.value)} />
-        <button onClick={handleAddHoliday}>휴일 추가</button>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">휴일 관리</h2>
+      <div className="space-y-2 mb-4">
+        <Input placeholder="휴일명" value={holidayName} onChange={e => setHolidayName(e.target.value)} />
+        <Input type="date" value={holidayDate} onChange={e => setHolidayDate(e.target.value)} />
+        <Button onClick={handleAddHoliday}>휴일 추가</Button>
       </div>
-      <h3>등록된 휴일 목록</h3>
-      <ul>
-        {holidays.length === 0 ? (
-          <li>휴일 없음</li>
-        ) : (
-          holidays.map(hol => (
-            <li key={hol.id}>{hol.date} - {hol.name}</li>
-          ))
-        )}
-      </ul>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>이름</TableHead>
+            <TableHead>날짜</TableHead>
+            <TableHead>삭제</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {holidays.map(hol => (
+            <TableRow key={hol.id}>
+              <TableCell>{hol.name}</TableCell>
+              <TableCell>{hol.date}</TableCell>
+              <TableCell>
+                <Button size="sm" variant="destructive" onClick={() => handleDeleteHoliday(hol.id)}>삭제</Button>
+              </TableCell>
+            </TableRow>
+          ))}
+          {holidays.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={3} className="text-center text-gray-500">등록된 휴일이 없습니다.</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
-export default HolidayPage;
+export default HolidayManagePage;

@@ -12,6 +12,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "date-holidays": "^3.24.2",
     "firebase": "^11.7.1",
     "framer-motion": "^12.10.5",
     "react": "^19.1.0",

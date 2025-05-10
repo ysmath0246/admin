@@ -1,44 +1,26 @@
 // src/pages/NoticeManagePage.jsx
-import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import NoticeDetailPage from './NoticeDetailPage';
+import HolidayPage from './HolidayPage';
+import { Button } from '../components/ui/button';
 
-function NoticeManagePage() {
-  const [notices, setNotices] = useState([]);
-
-  useEffect(() => {
-    const fetchNotices = async () => {
-      const snapshot = await getDocs(collection(db, 'notices'));
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setNotices(list);
-    };
-
-    fetchNotices();
-  }, []);
+export default function NoticeManagePage() {
+  const [tab, setTab] = useState('notice');
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>공지사항 관리</h2>
-      {notices.length === 0 ? (
-        <p>공지사항이 없습니다.</p>
-      ) : (
-        <ul>
-          {notices.map(notice => (
-            <li key={notice.id}>
-              <Link to={`/notice/detail?id=${notice.id}`}>
-                {notice.title || '(제목없음)'}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="p-4">
+      <h1>공지사항 관리</h1>
+      <div className="flex gap-2 mb-4">
+        <Button size="sm" variant={tab === 'notice' ? 'default' : 'outline'} onClick={() => setTab('notice')}>
+          공지사항
+        </Button>
+        <Button size="sm" variant={tab === 'holiday' ? 'default' : 'outline'} onClick={() => setTab('holiday')}>
+          휴일
+        </Button>
+      </div>
 
-      <Link to="/notice/holiday" style={{ display: 'block', marginTop: '20px' }}>
-        휴일 관리로 이동
-      </Link>
+      {tab === 'notice' && <NoticeDetailPage />}
+      {tab === 'holiday' && <HolidayPage />}
     </div>
   );
 }
-
-export default NoticeManagePage;

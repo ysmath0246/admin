@@ -6,6 +6,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '.
 import StudentCalendarModal from '../StudentCalendarModal';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { generateScheduleWithRollovers } from '../firebase/logic';  // ✅ 함수 import
 
 export default function ClassSubPage({ students, attendance, books, comments, makeups, holidays, refreshAllData }) {
   const [search, setSearch] = useState('');
@@ -22,6 +23,14 @@ export default function ClassSubPage({ students, attendance, books, comments, ma
       .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [students, search]);
+
+  const handleSelectStudent = (student) => {
+    setSelectedStudent(student);
+    // ✅ 수업 일정 생성
+    const rawLessons = generateScheduleWithRollovers(student.startDate, student.schedules, 12);
+    const filteredLessons = rawLessons.filter(l => !holidays.some(h => h.date === l.date));
+    setLessons(filteredLessons);
+  };
 
   return (
     <div className="flex gap-4">
