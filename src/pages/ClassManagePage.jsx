@@ -1,25 +1,23 @@
+// src/pages/ClassManagePage.jsx
 import { Link, Routes, Route } from 'react-router-dom';
 import ClassSubPage from './ClassSubPage';
 import MakeupSubPage from './MakeupSubPage';
 import PointSubPage from './PointSubPage';
-import BookSubPage from './BookSubPage';
 
 function ClassManagePage() {
   return (
-    <div>
+    <div style={{ padding: '20px' }}>
       <h2>수업관리</h2>
-      <nav>
-        <Link to="class">수업</Link> | 
-        <Link to="makeup">보강</Link> | 
-        <Link to="point">포인트</Link> | 
-        <Link to="book">문제집</Link>
+      <nav style={{ marginBottom: '20px' }}>
+        <Link to="class" style={{ marginRight: '10px' }}>수업</Link>
+        <Link to="makeup" style={{ marginRight: '10px' }}>보강</Link>
+        <Link to="point">포인트 랭킹</Link>
       </nav>
 
       <Routes>
         <Route path="class" element={<ClassSubPage />} />
         <Route path="makeup" element={<MakeupSubPage />} />
         <Route path="point" element={<PointSubPage />} />
-        <Route path="book" element={<BookSubPage />} />
       </Routes>
     </div>
   );
