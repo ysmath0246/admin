@@ -1,13 +1,12 @@
-// src/pages/StudentRegisterPage.jsx
+// src/pages/StudentPage.jsx
 import { useState, useEffect } from 'react';
-import { collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
-function StudentRegisterPage() {
-  const [name, setName] = useState('');
+function StudentRegisterHighPage() {  const [name, setName] = useState('');
   const [birth, setBirth] = useState('');
   const [parentPhone, setParentPhone] = useState('');
-  const [schedules, setSchedules] = useState([{ day: '', time: '' }]);
+  const [schedule, setSchedule] = useState([]);
   const [students, setStudents] = useState([]);
 
   useEffect(() => {
@@ -19,25 +18,17 @@ function StudentRegisterPage() {
     return () => unsub();
   }, []);
 
-  const handleScheduleChange = (index, field, value) => {
-    const updated = [...schedules];
-    updated[index][field] = value;
-    setSchedules(updated);
-  };
-
-  const addSchedule = () => {
-    setSchedules([...schedules, { day: '', time: '' }]);
-  };
-
-  const removeSchedule = (index) => {
-    const updated = [...schedules];
-    updated.splice(index, 1);
-    setSchedules(updated);
+  const handleCheckboxChange = (day) => {
+    if (schedule.includes(day)) {
+      setSchedule(schedule.filter(d => d !== day));
+    } else {
+      setSchedule([...schedule, day]);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !birth || !parentPhone || schedules.length === 0 || schedules.some(s => !s.day || !s.time)) {
+    if (!name || !birth || !parentPhone || schedule.length === 0) {
       alert('모든 항목을 입력하세요!');
       return;
     }
@@ -46,20 +37,20 @@ function StudentRegisterPage() {
       name,
       birth,
       parentPhone,
-      schedules, // 요일 + 시간 함께 저장
+      schedules: schedule.map(day => ({ day })),
       createdAt: new Date().toISOString(),
     });
 
     setName('');
     setBirth('');
     setParentPhone('');
-    setSchedules([{ day: '', time: '' }]);
-    alert('초/중등부 학생 등록 완료!');
+    setSchedule([]);
+    alert('학생 등록 완료!');
   };
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>초/중등부 학생 등록</h2>
+      <h2>학생등록</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>이름: </label>
@@ -74,23 +65,17 @@ function StudentRegisterPage() {
           <input value={parentPhone} onChange={e => setParentPhone(e.target.value)} />
         </div>
         <div>
-          <label>수업 요일 + 시간: </label>
-          {schedules.map((s, i) => (
-            <div key={i} style={{ display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '5px' }}>
+          <label>수업 요일: </label>
+          {['월', '화', '수', '목', '금', '토', '일'].map(day => (
+            <label key={day} style={{ marginRight: '8px' }}>
               <input
-                placeholder="요일 (월,화...)"
-                value={s.day}
-                onChange={e => handleScheduleChange(i, 'day', e.target.value)}
+                type="checkbox"
+                checked={schedule.includes(day)}
+                onChange={() => handleCheckboxChange(day)}
               />
-              <input
-                placeholder="시간 (예: 15:00)"
-                value={s.time}
-                onChange={e => handleScheduleChange(i, 'time', e.target.value)}
-              />
-              <button type="button" onClick={() => removeSchedule(i)}>삭제</button>
-            </div>
+              {day}
+            </label>
           ))}
-          <button type="button" onClick={addSchedule}>+ 수업 추가</button>
         </div>
         <button type="submit" style={{ marginTop: '10px' }}>학생 등록</button>
       </form>
@@ -102,7 +87,7 @@ function StudentRegisterPage() {
             <th>이름</th>
             <th>생년월일</th>
             <th>학부모 번호</th>
-            <th>수업 요일+시간</th>
+            <th>수업 요일</th>
           </tr>
         </thead>
         <tbody>
@@ -116,9 +101,7 @@ function StudentRegisterPage() {
                 <td>{stu.name}</td>
                 <td>{stu.birth}</td>
                 <td>{stu.parentPhone}</td>
-                <td>
-                  {stu.schedules.map(s => `${s.day}(${s.time})`).join(', ')}
-                </td>
+                <td>{stu.schedules.map(s => s.day).join(', ')}</td>
               </tr>
             ))
           )}
@@ -127,5 +110,4 @@ function StudentRegisterPage() {
     </div>
   );
 }
-
-export default StudentRegisterPage;
+export default StudentRegisterHighPage;
